@@ -19,12 +19,31 @@ logger.addHandler(file_handler)
 @login_required
 def index():
     todo = []
-    tasks = Task.query.join(Category, Task.category_id == Category.id).filter(
-        Category.user_id == current_user.id).all()
-    for task in tasks:
-        todo.append({'taskid': str(task.id), 'task': str(task.name), 'category': str(
-            task.category.name), 'priority': str(task.priority)})
-    return render_template('index.html', title='Home', todo=todo)
+    # tasks = Task.query.join(Category, Task.category_id == Category.id).filter(
+    #     Category.user_id == current_user.id).all()
+    category = set()
+    categories = Category.query.filter_by(user_id=current_user.id).all()
+    for c in categories:
+        category.add(c.name)
+        for task in c.tasks:
+            todo.append({'taskid': task.id, 'task': task.name,
+                         'category': task.category.name, 'priority': task.priority, 'time': task.timestamp})
+    return render_template('index.html', title='Home', todo=todo, category=category)
+
+
+@app.route('/<categoryName>')
+@login_required
+def filter(categoryName):
+    todo = []
+    category = set()
+    categories = Category.query.filter_by(user_id=current_user.id).all()
+    for c in categories:
+        category.add(c.name)
+        if c.name == categoryName:
+            for task in c.tasks:
+                todo.append({'taskid': task.id, 'task': task.name,
+                             'category': task.category.name, 'priority': task.priority, 'time': task.timestamp})
+    return render_template('index.html', title='Home', todo=todo, category=category)
 
 
 @app.route('/login', methods=['POST', 'GET'])
@@ -39,7 +58,7 @@ def login():
         user = User.query.filter_by(username=form.username.data).first()
         if user is not None and user.check_password(form.password.data):
             logger.info('user "{}" logged in'.format(user.username))
-            flash('Welocme '+str(form.username.data), 'success')
+            flash('Welocme '+form.username.data, 'success')
             login_user(user)
             next_page = request.args.get('next')
             if not next_page or url_parse(next_page).netloc != '':
@@ -69,21 +88,25 @@ def register():
 @app.route('/addCategory', methods=['POST', 'GET'])
 @login_required
 def add_category():
+    # fetch all categories of user and check if the current one already exists
+    categories = Category.query.filter_by(user_id=current_user.id).all()
+    categoryList = [(str(c.id), c.name) for c in categories]
+
     form = AddCategoryForm()
     if form.validate_on_submit():
-        # fetch all categories of user and check if the current one already exists
-        categories = Category.query.filter_by(user_id=current_user.id).all()
-        for c in categories:
-            if c.name == str(form.category.data).lower():
-                flash('Category '+str(form.category.data)+' already exists', 'danger')
+        for name in categoryList:
+            if name == form.category.data.lower():
+                flash('Category ' + form.category.data + ' already exists', 'danger')
                 return redirect(url_for('add_category'))
         # add category to database
-        logger.info(current_user.username + ' : added category : '+str(form.category.data))
-        category = Category(name=str(form.category.data).lower(), user_id=current_user.id)
+        logger.info(current_user.username + ' : added category : '+form.category.data)
+        category = Category(name=form.category.data.lower(), user_id=current_user.id)
         db.session.add(category)
         db.session.commit()
-        flash('Category ' + str(form.category.data) + ' Added', 'success')
-    return render_template('addCategory.html', title='Add Category', form=form)
+        db.session.flush()
+        categoryList.append((category.id, category.name))
+        flash('Category ' + form.category.data + ' Added', 'success')
+    return render_template('addCategory.html', title='Add Category', form=form, category=categoryList)
 
 
 @app.route('/addTask', methods=['POST', 'GET'])
@@ -98,30 +121,32 @@ def add_task():
         flash('You need to add a Category first', 'danger')
         return redirect(url_for('add_category'))
 
-    items = [str(category.name) for category in categories]
+    items = [category.name for category in categories]
 
-    form = AddTaskForm()
-    form.add_categories(items)
+    form = AddTaskForm(items)
+    # form.add_categories(items)
     if form.validate_on_submit():
         # check if task already exists
         for category in categories:
-            for task in category.tasks:
-                if str(task.name).lower() == str(form.task.data).lower():
-                    flash('Task ' + str(form.task.data) + ' already exists', 'danger')
-                    return render_template('addTask.html', title='Add Task', form=form)
+            if category.name == form.category.data.lower():
+                for task in category.tasks:
+                    if task.name.lower() == form.task.data.lower():
+                        flash('Task "' + form.task.data +
+                              '" already exists in '+category.name, 'danger')
+                        return render_template('addTask.html', title='Add Task', form=form)
         # find category id of selected category
         category_id = 0
         for category in categories:
-            if category.name == str(form.category.data).lower():
+            if category.name == form.category.data.lower():
                 category_id = category.id
                 break
         # add to database
-        task = Task(name=str(form.task.data).lower(),
+        task = Task(name=form.task.data.lower(),
                     priority=form.priority.data, category_id=category_id, user_id=current_user.id)
 
         db.session.add(task)
         db.session.commit()
-        flash('Task ' + str(form.task.data) + ' Added', 'success')
+        flash('Task ' + form.task.data + ' Added', 'success')
     return render_template('addTask.html', title='Add Task', form=form)
 
 
@@ -131,15 +156,40 @@ def delete_task(userid, taskid):
     if current_user.id == userid:
         task = Task.query.filter_by(id=taskid, user_id=userid).first()
         if not task:
-            logger.error('No task for '+str(current_user.username)+' with task id : '+str(taskid))
+            logger.error('No task for '+current_user.username+' with task id : '+str(taskid))
         else:
-            logger.info('Task '+str(task.name)+' deleted by '+str(current_user.username))
+            logger.info('Task '+task.name+' deleted by '+current_user.username)
             db.session.delete(task)
             db.session.commit()
     else:
-        logger.warning('User : '+str(current_user.username) +
+        logger.warning('User : ' + current_user.username +
                        ' tried to delete task of user id : '+str(userid))
     return redirect(url_for('index'))
+
+
+@app.route('/deleteCategory/<int:userid>/<int:categoryid>', methods=['GET', 'POST'])
+@login_required
+def delete_category(userid, categoryid):
+    if current_user.id == userid:
+        category = Category.query.filter_by(id=categoryid, user_id=userid).first()
+        if not category:
+            logger.error('No category for '+current_user.username +
+                         ' with category id : '+str(categoryid))
+        else:
+            tasks = list(category.tasks)
+            if not tasks:
+                db.session.delete(category)
+                db.session.commit()
+                flash('Category : '+category.name+' deleted ', 'success')
+                logger.info("Category : "+category.name+" deleted by "+current_user.username)
+            else:
+                print list(category.tasks)
+                flash('You have some tasks under this category!! Remove them first', 'danger')
+            return redirect(url_for('add_category'))
+    else:
+        logger.warning('User : '+current_user.username +
+                       ' tried to delete task of user id : '+str(userid))
+    return redirect(url_for('add_category'))
 
 
 @app.route('/logout')

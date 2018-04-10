@@ -1,7 +1,8 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, SelectField
-from wtforms.validators import Email, EqualTo, DataRequired, ValidationError
+from wtforms.validators import Email, EqualTo, DataRequired, ValidationError, Length
 from app.models import User
+from wtforms.fields.html5 import DateField
 
 
 class LoginForm(FlaskForm):
@@ -11,9 +12,9 @@ class LoginForm(FlaskForm):
 
 
 class RegistrationForm(FlaskForm):
-    username = StringField('Username', validators=[DataRequired()])
+    username = StringField('Username', validators=[DataRequired(), Length(min=4, max=15)])
     email = StringField('email', validators=[DataRequired(), Email()])
-    password = PasswordField('Password', validators=[DataRequired()])
+    password = PasswordField('Password', validators=[DataRequired(), Length(min=6, max=15)])
     repeat = PasswordField('Repeat Password', validators=[DataRequired(), EqualTo('password')])
     submit = SubmitField('Register')
 
@@ -39,9 +40,11 @@ class AddTaskForm(FlaskForm):
     category = SelectField('Category', choices=categories)
     task = StringField('Task', validators=[DataRequired()])
     priority = SelectField('Prioirty', choices=priorities)
+    deadline = DateField('Deadline', format='%Y-%m-%d', validators=[DataRequired()])
     submit = SubmitField('Add Task')
 
-    def add_categories(self, items):
+    def __init__(self, items, *args, **kwargs):
+        super(AddTaskForm, self).__init__(*args, **kwargs)
         size = len(self.categories)
         for item in items:
             self.categories.append((item, item))

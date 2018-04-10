@@ -18,9 +18,11 @@
           </div>
           <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
               <ul class="nav navbar-nav">
+                  {% if not current_user.is_anonymous %}
                   <li><a href="{{ url_for('index') }}">Home</a></li>
-                  <li><a href="{{ url_for('add_category') }}">Add Category</a></li>
-                  <li><a href="{{ url_for('add_task') }}">Add Task</a></li>
+                  <li><a href="{{ url_for('add_category') }}">Category</a></li>
+                  <li><a href="{{ url_for('add_task') }}">Task</a></li>
+                  {% endif %}
               </ul>
               <ul class="nav navbar-nav navbar-right">
                   {% if current_user.is_anonymous %}
@@ -47,4 +49,8 @@
 
     {% block app_content %}{% endblock %}
   </div>
+{% endblock %}
+{% block scripts %}
+    {{ super() }}
+    {{ moment.include_moment() }}
 {% endblock %}
