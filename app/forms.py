@@ -3,6 +3,7 @@ from wtforms import StringField, PasswordField, SubmitField, SelectField
 from wtforms.validators import Email, EqualTo, DataRequired, ValidationError, Length
 from app.models import User
 from wtforms.fields.html5 import DateField
+from datetime import datetime
 
 
 class LoginForm(FlaskForm):
@@ -31,7 +32,7 @@ class RegistrationForm(FlaskForm):
 
 class AddCategoryForm(FlaskForm):
     category = StringField('Category', validators=[DataRequired()])
-    submit = SubmitField('Add Category')
+    submit = SubmitField('Submit')
 
 
 class AddTaskForm(FlaskForm):
@@ -40,8 +41,8 @@ class AddTaskForm(FlaskForm):
     category = SelectField('Category', choices=categories)
     task = StringField('Task', validators=[DataRequired()])
     priority = SelectField('Prioirty', choices=priorities)
-    deadline = DateField('Deadline', format='%Y-%m-%d', validators=[DataRequired()])
-    submit = SubmitField('Add Task')
+    deadline = StringField('datepicker', validators=[DataRequired()])
+    submit = SubmitField('Submit')
 
     def __init__(self, items, *args, **kwargs):
         super(AddTaskForm, self).__init__(*args, **kwargs)

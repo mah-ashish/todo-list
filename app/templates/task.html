@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% import 'bootstrap/wtf.html' as wtf %}
+{% block styles %}
+  {{super()}}
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.4.1/css/bootstrap-datepicker3.css">
+{% endblock %}
+{% block app_content %}
+  <h1>Add Task</h1>
+  <div class="row">
+      <div class="col-md-4">
+          {{ wtf.quick_form(form) }}
+      </div>
+  </div>
+{% endblock %}
+{% block scripts %}
+    {{super()}}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.4.1/js/bootstrap-datepicker.min.js"></script>
+    <script src="{{url_for('static', filename='js/datepicker.js')}}"></script>
+{% endblock %}

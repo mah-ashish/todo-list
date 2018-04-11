@@ -2,61 +2,19 @@
 
 {% block app_content %}
   {% if category %}
-  <div class="col-md-4">
-    <div class="table-responsive">
-    <table class="table table-hover">
-      <h3>Category</h3>
-      <thead>
-        <tr>
-          <th>Category</th>
-          <th>Actions</th>
-        <tr>
-      </thead>
-      <tbody>
-      {% for item in category %}
-      <tr>
-        <td>{{item}}</td>
-        <td><a href="{{url_for('filter', categoryName=item)}}">
-          <button class="btn btn-success btn-sm">Filter</button></a></td>
-      </tr>
-      {% endfor %}
-      </tbody>
-    </table>
-  </div>
-  </div>
+    {% include '_category.html' %}
+  {% else %}
+    <h3>Your ToDo will appear here</h3>
   {% endif %}
-  {% if todo %}
+
   <div class="col-md-8">
     <div class="table-responsive">
-    <table class="table table-hover">
-      <h3>To Do</h3>
-      <thead>
-        <tr>
-          <th>Task</th>
-          <th>Category</th>
-          <th>Priority</th>
-          <th>Created</th>
-          <th>Actions</th>
-        <tr>
-      </thead>
-      <tbody>
-      {% for item in todo %}
-        <tr>
-          <td>{{ item.task }}</td>
-          <td>{{ item.category }}</td>
-          <td>{{ item.priority }}</td>
-          <td>{{ moment(item.time).fromNow() }}</td>
-          <td>
-              <a href="{{url_for('delete_task', taskid=item.taskid, userid=current_user.id)}}">
-                <button class="btn btn-danger btn-sm">Delete</button></a>
-          </td>
-        </tr>
-      {% endfor %}
-      <tbody>
-    </table>
+      {% if todo %}
+        {% include '_todo.html' %}
+      {% endif %}
+      {% if done %}
+        {% include '_done.html' %}
+      {% endif %}
   </div>
-  </div>
-  {% else %}
-    <h3>Your todo list will appear here</h3>
-  {% endif %}
+</div>
 {% endblock %}

@@ -37,6 +37,8 @@ class Task(db.Model):
     name = db.Column(db.String(50), index=True)
     priority = db.Column(db.String(15), index=True)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    deadline = db.Column(db.DateTime, index=True)
+    status = db.Column(db.Boolean, default=False)
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 

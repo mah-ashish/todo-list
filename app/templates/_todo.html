@@ -1,0 +1,33 @@
+<table class="table table-hover">
+  <h3>To Do</h3>
+  <thead>
+    <tr>
+      <th>Task</th>
+      <th>Category</th>
+      <th>Priority</th>
+      <th>DeadLine</th>
+      <th>Actions</th>
+      <th>Created</th>
+    <tr>
+  </thead>
+  <tbody>
+  {% for item in todo %}
+  <tr>
+    <td>{{ item.name }}</td>
+    <td>{{ item.category }}</td>
+    <td>{{ item.priority }}</td>
+    <td>{{ moment(item.deadline).format('ll') }}</td>
+    <td>
+        <a href="{{url_for('toggle_task', taskid=item.id)}}">
+          <span class="glyphicon glyphicon-ok" style="color:green"></span></a>
+        <a href="{{url_for('edit_task', taskid=item.id)}}">
+          <span class="glyphicon glyphicon-edit"></span></a>
+        <a href="{{url_for('delete_task', taskid=item.id)}}">
+          <span class="glyphicon glyphicon-trash" style="color:red"></span></a>
+    </td>
+    <td>created {{ moment(item.time).fromNow() }}</td>
+  </tr>
+
+  {% endfor %}
+  <tbody>
+</table>

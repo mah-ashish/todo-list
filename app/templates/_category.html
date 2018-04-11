@@ -1,0 +1,25 @@
+<div class="col-md-4">
+  <div class="table-responsive">
+  <table class="table table-hover">
+    <h3>Filter By</h3>
+    <thead>
+      <tr>
+        <th>Category</th>
+        <th>Actions</th>
+      <tr>
+    </thead>
+    <tbody>
+    {% for item in category %}
+    <tr>
+      <td><a href="{{url_for('filter', categoryName=item)}}">{{item}}</a></td>
+      <td>
+        <a href="{{url_for('edit_category', category=item)}}">
+        <span class="glyphicon glyphicon-edit"></span></a>
+        <a href="{{url_for('delete_category', category=item)}}">
+        <span class="glyphicon glyphicon-trash" style = "color:red"></span></a></td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+</div>
