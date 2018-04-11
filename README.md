@@ -11,7 +11,7 @@ The initial version is deployed to Heroku: http://flask-to-do.herokuapp.com/
 
 #### Install requirements using pip
 
-    pip install -r `requirements.txt`
+    pip install -r requirements.txt
 
 #### Create Tables in terminal
 
