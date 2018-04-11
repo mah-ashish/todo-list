@@ -13,7 +13,7 @@ The initial version is deployed to Heroku: http://flask-to-do.herokuapp.com/
 
     pip install -r `requirements.txt`
 
-#### Create DataBase in terminal
+#### Create Tables in terminal
 
     python  
     from app import db  
